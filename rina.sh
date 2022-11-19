@@ -74,3 +74,10 @@ do
     ip netns exec node$i sudo rlite-uipcps &
     
 done
+
+# Create OSPF routing daemons
+for ((i=1; i<=$number; i++))
+do
+    ip netns exec node$i sudo ospfd -d -f /etc/quagga/ospfd.conf -i /var/run/quagga/ospfd$i.pid -z /var/run/quagga/ospfd$i.api -u root &
+done
+
