@@ -118,36 +118,40 @@ def create_fully_meshed_topology(number, rina=True):
 
         if i == 0:
             run('rlite-ctl', 'ipcp-enroller-enable', f'{netns_name}.IPCP', netns=netns_name)
-            continue
+            
         
         for j in range(number):
-            if i != j:
-                if f"{i}-{j}" not in created_pairs and f"{j}-{i}" not in created_pairs:
-                    netns_name_other = f'node{j}'
-                    link_to = f'veth{i}-{j}'
-                    link_from = f'veth{j}-{i}'
-                    
-                    run('ip', 'link', 'add', link_to, 'type', 'veth', 'peer', 'name', link_from, netns=netns_name)
-                    run('ip', 'link', 'set', link_from, 'netns', netns_name_other, netns=netns_name)
-                    run('ip', 'addr', 'add', f'10.{i}.{j}.1/24', 'dev', link_to, netns=netns_name)
-                    run('ip', 'addr', 'add', f'10.{i}.{j}.2/24', 'dev', link_from, netns=netns_name_other)
-                    run('ip', 'link', 'set', link_to, 'up', netns=netns_name)
-                    run('ip', 'link', 'set', link_from, 'up', netns=netns_name_other)
+            if i != j and f"{i}-{j}" not in created_pairs and f"{j}-{i}" not in created_pairs:
 
-                    # RINA
-                    run('rlite-ctl', 'ipcp-create', f'{link_to}.IPCP', 'shim-eth', f'{link_to}.DIF', netns=netns_name)
-                    run('rlite-ctl', 'ipcp-config', f'{link_to}.IPCP', 'netdev', link_to, netns=netns_name)
-                    run('rlite-ctl', 'ipcp-register', f'{netns_name}.IPCP', f'{link_to}.DIF', netns=netns_name)
+                if j == 0:
+                    continue
+                
+                
+                netns_name_other = f'node{j}'
+                link_to = f'veth{i}-{j}'
+                link_from = f'veth{j}-{i}'
+                
+                run('ip', 'link', 'add', link_to, 'type', 'veth', 'peer', 'name', link_from, netns=netns_name)
+                run('ip', 'link', 'set', link_from, 'netns', netns_name_other, netns=netns_name)
+                run('ip', 'addr', 'add', f'10.{i}.{j}.1/24', 'dev', link_to, netns=netns_name)
+                run('ip', 'addr', 'add', f'10.{i}.{j}.2/24', 'dev', link_from, netns=netns_name_other)
+                run('ip', 'link', 'set', link_to, 'up', netns=netns_name)
+                run('ip', 'link', 'set', link_from, 'up', netns=netns_name_other)
 
-                    # RINA Other
-                    run('rlite-ctl', 'ipcp-create', f'{link_from}.IPCP', 'shim-eth', f'{link_from}.DIF', netns=netns_name_other)
-                    run('rlite-ctl', 'ipcp-config', f'{link_from}.IPCP', 'netdev', link_from, netns=netns_name_other)
-                    run('rlite-ctl', 'ipcp-register', f'{netns_name_other}.IPCP', f'{link_from}.DIF', netns=netns_name_other)
+                # RINA
+                run('rlite-ctl', 'ipcp-create', f'{link_to}.IPCP', 'shim-eth', f'{link_to}.DIF', netns=netns_name)
+                run('rlite-ctl', 'ipcp-config', f'{link_to}.IPCP', 'netdev', link_to, netns=netns_name)
+                run('rlite-ctl', 'ipcp-register', f'{netns_name}.IPCP', f'{link_to}.DIF', netns=netns_name)
 
-                    # RINA Enroll
-                    run('rlite-ctl', 'ipcp-enroll', f'{netns_name}.IPCP', 'n.DIF', f'{link_to}.DIF', f'{netns_name_other}.IPCP', netns=netns_name)
+                # RINA Other
+                run('rlite-ctl', 'ipcp-create', f'{link_from}.IPCP', 'shim-eth', f'{link_from}.DIF', netns=netns_name_other)
+                run('rlite-ctl', 'ipcp-config', f'{link_from}.IPCP', 'netdev', link_from, netns=netns_name_other)
+                run('rlite-ctl', 'ipcp-register', f'{netns_name_other}.IPCP', f'{link_from}.DIF', netns=netns_name_other)
 
-                    created_pairs.add(f"{i}-{j}")
+                # RINA Enroll
+                run('rlite-ctl', 'ipcp-enroll', f'{netns_name_other}.IPCP', 'n.DIF', f'{link_from}.DIF', f'{netns_name}.IPCP', netns=netns_name_other)
+
+                created_pairs.add(f"{i}-{j}")
 
 
 
