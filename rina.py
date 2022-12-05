@@ -33,6 +33,7 @@ def run(*args, check=True, text=True, netns=None, **kwargs):
 def cleanup():
     run('ip', '-all', 'netns', 'delete')
     try:
+        run('killall', 'bird')
         run('killall', 'rlite-uipcp')
     except RuntimeError:
         pass
@@ -71,6 +72,9 @@ def create_line_topology(number):
         run('ip', 'link', 'set', link_from, 'up', netns=netns_name_next)
         run('ip', 'link', 'set', 'lo', 'up', netns=netns_name)
         run('ip', 'link', 'set', 'lo', 'up', netns=netns_name_next)
+
+        # OSPF
+        run('bird', '-c', 'bird.conf', '-P', f'/var/run/bird-{netns_name}.pid', '-s', f'/var/run/bird-{netns_name}.ctl', netns=netns_name)
 
         # RINA
         logger.warning(f"Setup RINA base node {i}")
@@ -153,6 +157,9 @@ def create_fully_meshed_topology(number, rina=True):
 
                 created_pairs.add(f"{i}-{j}")
 
+        # OSPF
+        run('bird', '-c', 'bird.conf', '-P', f'/var/run/bird-{netns_name}.pid', '-s', f'/var/run/bird-{netns_name}.ctl', netns=netns_name)
+
 
 
 def create_redundant_paths_topology(number):
@@ -184,6 +191,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
