@@ -52,9 +52,10 @@ def load_rlite():
     run('modprobe', 'rlite-normal')
     run('modprobe', 'rlite-shim-eth')
 
+
 def start_bird(netns_name):
-     run('bird', '-c', 'bird.conf', '-P', f'/var/run/bird-{netns_name}.pid', '-s', f'/var/run/bird-{netns_name}.ctl',
-            netns=netns_name)
+    run('bird', '-c', 'bird.conf', '-P', f'/var/run/bird-{netns_name}.pid', '-s', f'/var/run/bird-{netns_name}.ctl',
+        netns=netns_name)
 
 
 def create_line_topology(number):
@@ -182,11 +183,10 @@ def create_redundant_paths_topology(number):
         else:
             layer_dict[int(i / 3) + 1] = [i]
 
-    
     for layer in layer_dict:
         for i in layer_dict[layer]:
             # Connect Nodes in the same layer
-            if len(layer_dict[layer]) > 1:
+            if len(layer_dict[layer]) > 1 and (i + 1) % 3 in layer_dict[layer]:
                 next = layer_dict[layer][(i + 1) % 3]
                 netns_name = f'node{i}'
                 next_netns_name = f'node{next}'
@@ -199,12 +199,26 @@ def create_redundant_paths_topology(number):
 
                 run('ip', 'link', 'add', link_to, 'type', 'veth', 'peer', 'name', link_from, netns=netns_name)
                 run('ip', 'link', 'set', link_from, 'netns', next_netns_name, netns=netns_name)
-                run('ip', 'addr', 'add', f'10.0.{layer}.{i}/24', 'dev', link_to, netns=netns_name)
-                run('ip', 'addr', 'add', f'10.0.{layer}.{i+1}/24', 'dev', link_from, netns=next_netns_name)
+                run('ip', 'addr', 'add', f'10.0.{i}.1/24', 'dev', link_to, netns=netns_name)
+                run('ip', 'addr', 'add', f'10.0.{i}.2/24', 'dev', link_from, netns=next_netns_name)
                 run('ip', 'link', 'set', link_to, 'up', netns=netns_name)
                 run('ip', 'link', 'set', link_from, 'up', netns=next_netns_name)
 
-                start_bird(netns_name)
+                # RINA
+                run('rlite-ctl', 'ipcp-create', f'{link_to}.IPCP', 'shim-eth', f'{link_to}.DIF', netns=netns_name)
+                run('rlite-ctl', 'ipcp-config', f'{link_to}.IPCP', 'netdev', link_to, netns=netns_name)
+                run('rlite-ctl', 'ipcp-register', f'{netns_name}.IPCP', f'{link_to}.DIF', netns=netns_name)
+
+                # RINA Other
+                run('rlite-ctl', 'ipcp-create', f'{link_from}.IPCP', 'shim-eth', f'{link_from}.DIF',
+                    netns=next_netns_name)
+                run('rlite-ctl', 'ipcp-config', f'{link_from}.IPCP', 'netdev', link_from, netns=next_netns_name)
+                run('rlite-ctl', 'ipcp-register', f'{next_netns_name}.IPCP', f'{link_from}.DIF',
+                    netns=next_netns_name)
+
+                # RINA Enroll
+                run('rlite-ctl', 'ipcp-enroll', f'{next_netns_name}.IPCP', 'n.DIF', f'{link_from}.DIF',
+                    f'{netns_name}.IPCP', netns=next_netns_name)
 
             # Connect Layers
             if layer + 1 in layer_dict:
@@ -218,11 +232,31 @@ def create_redundant_paths_topology(number):
 
                     run('ip', 'link', 'add', link_to, 'type', 'veth', 'peer', 'name', link_from, netns=netns_name)
                     run('ip', 'link', 'set', link_from, 'netns', next_netns_name, netns=netns_name)
-                    run('ip', 'addr', 'add', f'10.1.{layer}.{i}/24', 'dev', link_to, netns=netns_name)
-                    run('ip', 'addr', 'add', f'10.1.{layer}.{next}/24', 'dev', link_from, netns=next_netns_name)
+                    run('ip', 'addr', 'add', f'10.{layer}.{i}.1/24', 'dev', link_to, netns=netns_name)
+                    run('ip', 'addr', 'add', f'10.{layer}.{i}.2/24', 'dev', link_from, netns=next_netns_name)
                     run('ip', 'link', 'set', link_to, 'up', netns=netns_name)
                     run('ip', 'link', 'set', link_from, 'up', netns=next_netns_name)
-        
+
+                    # RINA
+                    run('rlite-ctl', 'ipcp-create', f'{link_to}.IPCP', 'shim-eth', f'{link_to}.DIF', netns=netns_name)
+                    run('rlite-ctl', 'ipcp-config', f'{link_to}.IPCP', 'netdev', link_to, netns=netns_name)
+                    run('rlite-ctl', 'ipcp-register', f'{netns_name}.IPCP', f'{link_to}.DIF', netns=netns_name)
+
+                    # RINA Other
+                    run('rlite-ctl', 'ipcp-create', f'{link_from}.IPCP', 'shim-eth', f'{link_from}.DIF',
+                        netns=next_netns_name)
+                    run('rlite-ctl', 'ipcp-config', f'{link_from}.IPCP', 'netdev', link_from, netns=next_netns_name)
+                    run('rlite-ctl', 'ipcp-register', f'{next_netns_name}.IPCP', f'{link_from}.DIF',
+                        netns=next_netns_name)
+
+                    # RINA Enroll
+                    run('rlite-ctl', 'ipcp-enroll', f'{next_netns_name}.IPCP', 'n.DIF', f'{link_from}.DIF',
+                        f'{netns_name}.IPCP', netns=next_netns_name)
+
+    # OSPF
+    for i in range(number):
+        netns_name = f'node{i}'
+        start_bird(netns_name)
 
 
 def perform_test_rina(number):
