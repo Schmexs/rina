@@ -60,7 +60,7 @@ def mesh_datarate_test():
         rina.cleanup()
         rina.create_networknamespaces(size)
         rina.create_fully_meshed_topology(size)
-        time.sleep(size)
+        time.sleep(size * 3)
 
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
         rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', netns=f'node{size - 1}', stdout=subprocess.PIPE)
@@ -73,7 +73,7 @@ def mesh_datarate_test():
         mesh_result_rina[size] = float(match.group(1))
 
         rina.run('netserver', netns='node0')
-        ip_result_raw =  rina.run('netperf', '-H', '10.0.1.1', '-P', '0', '--', '-o', 'THROUGHPUT', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+        ip_result_raw =  rina.run('netperf', '-H', f'10.0.{size-1}.1', '-P', '0', '--', '-o', 'THROUGHPUT', netns=f'node{size - 1}', stdout=subprocess.PIPE)
         mesh_result_ip[size] = float(ip_result_raw.strip())
 
 
