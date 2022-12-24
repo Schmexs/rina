@@ -5,8 +5,34 @@ import rina
 import logging
 import time
 import re
+import matplotlib.pyplot as plt
 
 lo = logging.getLogger("rina")
+
+def plot(result_rina, result_ip, title):
+    size = []
+    loss = []
+  
+    for key in result_rina:
+        s = int(key.split(':')[0])
+        l = float(key.split(':')[1])
+        size.append(s) if s not in size else None
+        loss.append(l) if l not in loss else None
+    
+    for s in size:
+        x = []
+        y = []
+        y2 = []
+        for l in loss:
+            x.append(l)
+            y.append(result_rina[f'{s}:{l}'])
+            y2.append(result_ip[f'{s}:{l}'])
+        
+        plt.plot(x, y, label=f'RINA {s} nodes', color=plt.cm.viridis(s*2))
+        plt.plot(x, y2, label=f'IP {s} nodes', color=plt.cm.viridis(s*2), linestyle='dashed')
+    
+    plt.show()
+            
 
 # Line
 line_result_rina = {}
@@ -53,7 +79,7 @@ def line_datarate_test():
             ip_result_raw =  rina.run('netperf', '-H', '10.0.0.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
             line_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
             package_loss += 0.5
-
+    plot(line_result_rina, line_result_ip, "Line topology")
 
 # Fully meshed
 mesh_result_rina = {}
