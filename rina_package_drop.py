@@ -28,8 +28,9 @@ def plot(result_rina, result_ip, title):
             y.append(result_rina[f'{s}:{l}'])
             y2.append(result_ip[f'{s}:{l}'])
         
-        plt.plot(x, y, label=f'RINA {s} nodes', color=plt.cm.viridis(s*2))
-        plt.plot(x, y2, label=f'IP {s} nodes', color=plt.cm.viridis(s*2), linestyle='dashed')
+        plt.plot(x, y, color=plt.cm.viridis(s*10))
+        plt.plot(x, y2, color=plt.cm.viridis(s*10), linestyle='dashed')
+        plt.title(title)
     
     plt.show()
             
@@ -89,7 +90,7 @@ def mesh_datarate_test():
     global mesh_result_rina
     global mesh_result_ip
 
-    test_sizes = [3, 6]
+    test_sizes = [3, 6, 10]
     #test_sizes = [2, 5, 10, 30, 50]
 
     for size in test_sizes:
@@ -118,14 +119,15 @@ def mesh_datarate_test():
 
             if match is None:
                 print(f"No valid result from rinaperf: {rina_result_raw}")
-                line_result_rina[f'{size}:{package_loss}'] = 0
+                mesh_result_rina[f'{size}:{package_loss}'] = 0
             else:
-                line_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
+                mesh_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
 
             ip_result_raw =  rina.run('netperf', '-H', f'10.0.{size-1}.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
             mesh_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
             package_loss += 0.5
 
+    plot(mesh_result_rina, mesh_result_ip, "Mesh topology")
 
 
 def main():
