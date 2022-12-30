@@ -90,7 +90,7 @@ def mesh_datarate_test():
     global mesh_result_rina
     global mesh_result_ip
 
-    test_sizes = [3, 6, 10]
+    test_sizes = [3, 6]
     #test_sizes = [2, 5, 10, 30, 50]
 
     for size in test_sizes:
@@ -130,10 +130,71 @@ def mesh_datarate_test():
     plot(mesh_result_rina, mesh_result_ip, "Mesh topology")
 
 
+# Redundant
+redundant_result_rina = {}
+redundant_result_ip = {}
+
+def redundant_datarate_test():
+    global redundant_result_rina
+    global redundant_result_ip
+
+    test_sizes = [5, 6, 8]
+    #test_sizes = [4, 5, 10, 30, 50]
+
+    for size in test_sizes:
+        lo.info(f"Running datarate test with Redundant topology with {size} nodes.")
+
+        rina.cleanup()
+        rina.create_networknamespaces(size)
+        rina.create_redundant_paths_topology(size)
+        time.sleep(size * 5)
+        package_loss = 0.5
+        
+        if size % 3 == 0:
+            neighbors = [size-2, size-3, size-4]
+        elif size % 3 == 2:
+            neighbors = [size-2, size-4]
+        elif size % 3 == 1:
+            neighbors = [size-4]
+        else:
+            neighbors = []
+        
+        for n in neighbors:
+            rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
+        
+        rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
+        rina.run('netserver', netns='node0')
+
+        while package_loss <= 10:
+            for n in neighbors:
+                rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
+
+            try:
+                rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+            except RuntimeError as e:
+                print(f"rinaperf failed: {e}")
+                rina_result_raw = ""
+
+            match = re.search(rinaper_re, rina_result_raw)
+
+            if match is None:
+                print(f"No valid result from rinaperf: {rina_result_raw}")
+                redundant_result_rina[f'{size}:{package_loss}'] = 0
+            else:
+                redundant_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
+
+            ip_result_raw =  rina.run('netperf', '-H', '10.0.0.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+            redundant_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
+            package_loss += 0.5
+
+    plot(redundant_result_rina, redundant_result_ip, "Redundant topology")
+
+
 def main():
     rina.load_rlite()
     line_datarate_test()
     mesh_datarate_test()
+    redundant_datarate_test()
     rina.cleanup()
 
     print("RESULTS: (in MBit/s)")
@@ -144,6 +205,10 @@ def main():
     print("MESH:")
     print(f"TCP/IP: {mesh_result_ip}")
     print(f"RINA: {mesh_result_rina}")
+    print("\n")
+    print("REDUNDANT:")
+    print(f"TCP/IP: {redundant_result_ip}")
+    print(f"RINA: {redundant_result_rina}")
 
 
 if __name__ == "__main__":
