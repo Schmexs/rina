@@ -101,13 +101,17 @@ def mesh_datarate_test():
         rina.create_fully_meshed_topology(size)
         time.sleep(size * 3)
         package_loss = 0.5
-        rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
+
+        for i in range(size):
+            rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
+        
         
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
         rina.run('netserver', netns='node0')
 
         while package_loss <= 10:
-            rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
+            for i in range(size):
+                rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
             try:
                 rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
