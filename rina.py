@@ -51,6 +51,12 @@ def load_rlite():
     run('modprobe', 'rlite')
     run('modprobe', 'rlite-normal')
     run('modprobe', 'rlite-shim-eth')
+    set_sysctl()
+
+
+def set_sysctl():
+    run('sysctl', '-w', 'net.ipv4.ip_forward=1')
+    run('sysctl', '-w', 'net.ipv4.conf.all.rp_filter=0')
 
 
 def start_bird(netns_name):
