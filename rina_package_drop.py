@@ -28,10 +28,11 @@ def plot(result_rina, result_ip, title):
             y.append(result_rina[f'{s}:{l}'])
             y2.append(result_ip[f'{s}:{l}'])
         
-        plt.plot(x, y, color=plt.cm.viridis(s*10))
-        plt.plot(x, y2, color=plt.cm.viridis(s*10), linestyle='dashed')
+        plt.plot(x, y, label=f'{s}-nodes')
+        plt.plot(x, y2, linestyle='dashed', label=f'{s}-nodes')
         plt.title(title)
     
+    plt.legend()
     plt.show()
             
 
@@ -102,7 +103,7 @@ def mesh_datarate_test():
         time.sleep(size * 3)
         package_loss = 0.5
 
-        for i in range(size):
+        for i in range(size - 1):
             rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
         
         
@@ -110,7 +111,7 @@ def mesh_datarate_test():
         rina.run('netserver', netns='node0')
 
         while package_loss <= 10:
-            for i in range(size):
+            for i in range(size - 1):
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
             try:
