@@ -78,13 +78,12 @@ def plot_rr(rr_result_rina, rr_result_tcp, rr_result_udp, title):
 
 
 def main():
-    plot_ping("line_ping_result_rina", "line_ping_result_ip", "Ping Latency line topology")
-    plot_ping("redundant_ping_result_rina", "redundant_ping_result_ip", "Ping Latency redundant topology")
+    plot_ping("line_ping_result_rina", "line_ping_result_ip", "Ping latency line topology")
+    plot_ping("redundant_ping_result_rina", "redundant_ping_result_ip", "Ping latency redundant topology")
+    plot_ping('fully_meshed_ping_result_rina', 'fully_meshed_ping_result_ip', 'Ping latency fully meshed topology')
 
     plot_rr('line_rr_result_rina', 'line_rr_tcp_result', 'line_rr_udp_result', 'Line Request/Response (rr)')
     plot_rr('redundant_rr_result_rina', 'redundant_rr_tcp_result', 'redundant_rr_udp_result', 'Redundant Request/Response (rr)')
-
-    plot_rr('fully_meshed_rr_result_rina', 'fully_meshed_rr_tcp_result', 'fully_meshed_rr_udp_result', 'Line Request/Response (rr)')
     plot_rr('fully_meshed_rr_result_rina', 'fully_meshed_rr_tcp_result', 'fully_meshed_rr_udp_result', 'Fully meshed Request/Response (rr)')
 
 if __name__ == "__main__":
