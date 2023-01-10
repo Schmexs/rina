@@ -150,10 +150,10 @@ def fully_meshed_latency_test():
         fully_meshed_rr_result_rina[currentNode] = float(re.findall(regex_rinaperf_rr ,rina.run('rinaperf', '-d', 'n.DIF', '-c', rrTransactions, '-t', 'rr', netns=f'node{currentNode}', stdout=subprocess.PIPE))[0])
         
         #IP
-        raw_fully_meshed_ping_result_ip = re.search(regex_ping_raw, rina.run('ping', '10.0.0.1', '-q', '-c', pingCount, netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0)
+        raw_fully_meshed_ping_result_ip = re.search(regex_ping_raw, rina.run('ping', f'10.0.1.1', '-q', '-c', pingCount, netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0)
         fully_meshed_ping_result_ip[currentNode] = list(map(float, re.findall(regex_ping, raw_fully_meshed_ping_result_ip)))
-        fully_meshed_rr_tcp_result[currentNode] = float(re.search(regex_netperf_rr, rina.run('netperf', '-H', '10.0.0.1', '-P', '0' '-t', 'TCP_RR', '-l', '-'+str(rrTransactions), '--', '-o', 'mean_latency', netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0))
-        fully_meshed_rr_udp_result[currentNode] = float(re.search(regex_netperf_rr, rina.run('netperf', '-H', '10.0.0.1', '-P', '0' '-t', 'UDP_RR', '-l', '-'+str(rrTransactions), '--', '-o', 'mean_latency', netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0))
+        fully_meshed_rr_tcp_result[currentNode] = float(re.search(regex_netperf_rr, rina.run('netperf', '-H', '10.0.1.1', '-P', '0' '-t', 'TCP_RR', '-l', '-'+str(rrTransactions), '--', '-o', 'mean_latency', netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0))
+        fully_meshed_rr_udp_result[currentNode] = float(re.search(regex_netperf_rr, rina.run('netperf', '-H', '10.0.1.1', '-P', '0' '-t', 'UDP_RR', '-l', '-'+str(rrTransactions), '--', '-o', 'mean_latency', netns=f'node{currentNode}', stdout=subprocess.PIPE)).group(0))
 
     with open("fully_meshed_ping_result_rina", 'wb') as outfile:
         pickle.dump(fully_meshed_ping_result_rina, outfile)
@@ -170,13 +170,13 @@ def fully_meshed_latency_test():
 
 def main():
     rina.load_rlite()
-    rina.cleanup()
-    line_latency_test()
-    rina.cleanup()
-    redundant_latency_test()
-    rina.cleanup()
-    #fully_meshed_latency_test()
     #rina.cleanup()
+    #line_latency_test()
+    #rina.cleanup()
+    #redundant_latency_test()
+    rina.cleanup()
+    fully_meshed_latency_test()
+    rina.cleanup()
 
     print("Results")
     print("Line")
