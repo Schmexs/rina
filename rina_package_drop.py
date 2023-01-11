@@ -6,6 +6,7 @@ import logging
 import time
 import re
 import matplotlib.pyplot as plt
+import statistics
 
 lo = logging.getLogger("rina")
 
@@ -34,13 +35,16 @@ def plot(result_rina, result_ip, title):
     
     plt.legend()
     plt.show()
+
+def match_rina_result(result):
+    return float(re.search(rinaper_re, result).group(1))
             
 
 # Line
 line_result_rina = {}
 line_result_ip = {}
 
-rinaper_re = re.compile(r"Sender\s*\d*\s*[\d\.]*\s*([\d\.]*)")
+rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 
 def line_datarate_test():
     global line_result_rina
@@ -63,19 +67,24 @@ def line_datarate_test():
         while package_loss <= 10:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
-            try:
-                rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-            except RuntimeError as e:
-                print(f"rinaperf failed: {e}")
-                rina_result_raw = ""
+            value = []
+            for i in range(5):
+                try:
+                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)    
+                    value.append(match_rina_result(rina_result_raw))
+                except RuntimeError as e:
+                    print(f"rinaperf failed: {e}")
+                    rina_result_raw = ""
+                
+            
+            result = statistics.mean(value)
+            
 
-            match = re.search(rinaper_re, rina_result_raw)
-
-            if match is None:
-                print(f"No valid result from rinaperf: {rina_result_raw}")
+            if result is None:
+                print(f"No valid result from rinaperf: {result}")
                 line_result_rina[f'{size}:{package_loss}'] = 0
             else:
-                line_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
+                line_result_rina[f'{size}:{package_loss}'] = result
 
             
             ip_result_raw =  rina.run('netperf', '-H', '10.0.0.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
@@ -114,19 +123,22 @@ def mesh_datarate_test():
             for i in range(size - 1):
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
-            try:
-                rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-            except RuntimeError as e:
-                print(f"rinaperf failed: {e}")
-                rina_result_raw = ""
+            value = []
+            for i in range(5):
+                try:
+                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+                    value.append(match_rina_result(rina_result_raw))
+                except RuntimeError as e:
+                    print(f"rinaperf failed: {e}")
+                    rina_result_raw = ""
 
-            match = re.search(rinaper_re, rina_result_raw)
+            result = statistics.mean(value)
 
-            if match is None:
-                print(f"No valid result from rinaperf: {rina_result_raw}")
+            if result is None:
+                print(f"No valid result from rinaperf: {result}")
                 mesh_result_rina[f'{size}:{package_loss}'] = 0
             else:
-                mesh_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
+                mesh_result_rina[f'{size}:{package_loss}'] = result
 
             ip_result_raw =  rina.run('netperf', '-H', f'10.0.{size-1}.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
             mesh_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
@@ -174,19 +186,22 @@ def redundant_datarate_test():
             for n in neighbors:
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
 
-            try:
-                rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-            except RuntimeError as e:
-                print(f"rinaperf failed: {e}")
-                rina_result_raw = ""
+            value = []
+            for i in range(5):
+                try:
+                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+                    value.append(match_rina_result(rina_result_raw))
+                except RuntimeError as e:
+                    print(f"rinaperf failed: {e}")
+                    rina_result_raw = ""
 
-            match = re.search(rinaper_re, rina_result_raw)
+            result = statistics.mean(value)
 
-            if match is None:
-                print(f"No valid result from rinaperf: {rina_result_raw}")
+            if result is None:
+                print(f"No valid result from rinaperf: {result}")
                 redundant_result_rina[f'{size}:{package_loss}'] = 0
             else:
-                redundant_result_rina[f'{size}:{package_loss}'] = float(match.group(1))
+                redundant_result_rina[f'{size}:{package_loss}'] = result
 
             ip_result_raw =  rina.run('netperf', '-H', '10.0.0.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
             redundant_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
