@@ -7,8 +7,10 @@ import time
 import re
 import matplotlib.pyplot as plt
 import statistics
+import json
 
 lo = logging.getLogger("rina")
+rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 
 def plot(result_rina, result_ip, title):
     size = []
@@ -44,13 +46,12 @@ def match_rina_result(result):
 line_result_rina = {}
 line_result_ip = {}
 
-rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 
 def line_datarate_test():
     global line_result_rina
     global line_result_ip
 
-    test_sizes = [2, 5]
+    test_sizes = [2]
     #test_sizes = [2, 5, 10, 30, 50]
 
     for size in test_sizes:
@@ -63,33 +64,39 @@ def line_datarate_test():
         rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
         
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
-        rina.run('netserver', netns='node0')
-        while package_loss <= 10:
+        rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
+        while package_loss <= 6:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
-            value = []
-            for i in range(5):
+            results_rina = []
+            results_ip = []
+
+            for _ in range(3):
                 try:
-                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)    
-                    value.append(match_rina_result(rina_result_raw))
+                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '5', netns=f'node{size - 1}', stdout=subprocess.PIPE)    
+                    results_rina.append(match_rina_result(rina_result_raw))
                 except RuntimeError as e:
                     print(f"rinaperf failed: {e}")
-                    rina_result_raw = ""
+                    results_rina.append(0)
+
                 
-            
-            result = statistics.mean(value)
-            
+                try :
+                    ip_result_raw =  rina.run('iperf3', '-c', '10.0.0.1','-J', '-t', '5', '-M', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+                    ip_result_dict = json.loads(ip_result_raw)
+                    results_ip.append(ip_result_dict['end']["sum_received"]['bits_per_second'] / 10 ** 6)
+                except (RuntimeError, KeyError) as e:
+                    results_ip.append(0)
+                    print(f"iperf3 failed: {e}")
 
-            if result is None:
-                print(f"No valid result from rinaperf: {result}")
-                line_result_rina[f'{size}:{package_loss}'] = 0
-            else:
-                line_result_rina[f'{size}:{package_loss}'] = result
+                
+            line_result_ip[f'{size}:{package_loss}'] = statistics.mean(results_ip)
+            line_result_rina[f'{size}:{package_loss}'] = statistics.mean(results_rina)
 
-            
-            ip_result_raw =  rina.run('netperf', '-H', '10.0.0.1', '-P', '0', '--', '-o', 'THROUGHPUT', '--', '-m', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-            line_result_ip[f'{size}:{package_loss}'] = float(ip_result_raw.strip())
-            package_loss += 0.5
+            print(f"RESULT IP: {line_result_ip[f'{size}:{package_loss}']}")
+            print(f"RESULT RINA: {line_result_rina[f'{size}:{package_loss}']}")
+
+            package_loss += 2
+
     plot(line_result_rina, line_result_ip, "Line topology")
 
 # Fully meshed
