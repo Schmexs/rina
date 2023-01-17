@@ -23,17 +23,20 @@ def create_json(title, x_name, x_unit, y_name, y_unit, series):
         },
         "series": series
     }
-    write_json(json)
+    return json
 
 
 def main():
+    test_results = []
     drop_package_test = rpd.main()
 
     for test in drop_package_test:
         for title in test:
-            create_json(title, "pckg loss", "%", "datarate", "Mbit/s", test[title])
+            test_results.append(create_json(title, "pckg loss", "%", "datarate", "Mbit/s", test[title]))
 
 
+    write_json(test_results)
+    
 if __name__ == "__main__":
     main()
 
