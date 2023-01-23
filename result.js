@@ -1,6 +1,6 @@
 
-colors_dashed = ['#004466', '#0088CC', '#33BBFF', '#99DDFF'];
-colors_normal = ['#660011', '#CC0022', '#FF3355', '#FF99AA'];
+colors_dashed = ['#004466', '#0088CC', '#33BBFF', '#99DDFF', '#00FFFF'];
+colors_normal = ['#660011', '#CC0022', '#FF3355', '#FF99AA', '#FF0080'];
 
 function generateChartData(chart) {
     let color_index_normal = 0;
