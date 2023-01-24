@@ -9,6 +9,12 @@ import matplotlib.pyplot as plt
 import statistics
 import json
 
+LOSS_START = 0.05
+LOSS_INCREASE = 0.05
+LOSS_MAX = 0.3
+SAMPLES = 3
+RETIRES_MAX = 10
+
 lo = logging.getLogger("rina")
 rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 
@@ -61,7 +67,6 @@ def match_rina_result(result):
 line_result_rina = {}
 line_result_ip = {}
 
-
 def line_datarate_test():
     global line_result_rina
     global line_result_ip
@@ -75,12 +80,12 @@ def line_datarate_test():
         rina.create_networknamespaces(size)
         rina.create_line_topology(size)
         time.sleep(size)
-        package_loss = 0.5
+        package_loss = LOSS_START
         rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
         
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
         rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
-        while package_loss <= 10:
+        while package_loss <= LOSS_MAX:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
             results_rina = []
@@ -88,8 +93,8 @@ def line_datarate_test():
 
             timeout_try_rina = 0
             success_try_rina = 0
-            while success_try_rina < 3:
-                if timeout_try_rina > 20:
+            while success_try_rina < SAMPLES:
+                if timeout_try_rina > RETIRES_MAX:
                     results_rina.append(0)
                     break
                 try:
@@ -103,8 +108,8 @@ def line_datarate_test():
 
             timeout_try_ip = 0
             success_try_ip = 0
-            while success_try_ip < 3:
-                if timeout_try_ip > 20:
+            while success_try_ip < SAMPLES:
+                if timeout_try_ip > RETIRES_MAX:
                     results_ip.append(0)
                     break
                 try :
@@ -122,7 +127,7 @@ def line_datarate_test():
             print(f"RESULT IP: {line_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {line_result_rina[f'{size}:{package_loss}']}")
 
-            package_loss += 0.5
+            package_loss += LOSS_INCREASE
 
     return (plot(line_result_rina, line_result_ip, 'Packet loss Line topology'))
 
@@ -136,7 +141,7 @@ def mesh_datarate_test():
     global mesh_result_ip
 
     #test_sizes = [3, 6]
-    test_sizes = [2, 5, 10, 30, 50]
+    test_sizes = [5, 10, 30, 50]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with fully meshed topology with {size} nodes.")
@@ -145,7 +150,7 @@ def mesh_datarate_test():
         rina.create_networknamespaces(size)
         rina.create_fully_meshed_topology(size)
         time.sleep(size * 3)
-        package_loss = 0.5
+        package_loss = LOSS_START
 
         for i in range(size - 1):
             rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
@@ -154,7 +159,7 @@ def mesh_datarate_test():
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
         rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
 
-        while package_loss <= 10:
+        while package_loss <= LOSS_MAX:
             for i in range(size - 1):
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
@@ -163,8 +168,8 @@ def mesh_datarate_test():
 
             timeout_try_rina = 0
             success_try_rina = 0
-            while success_try_rina < 3:
-                if timeout_try_rina > 20:
+            while success_try_rina < SAMPLES:
+                if timeout_try_rina > RETIRES_MAX:
                     results_rina.append(0)
                     break
                 try:
@@ -178,8 +183,8 @@ def mesh_datarate_test():
 
             timeout_try_ip = 0
             success_try_ip = 0
-            while success_try_ip < 3:
-                if timeout_try_ip > 20:
+            while success_try_ip < SAMPLES:
+                if timeout_try_ip > RETIRES_MAX:
                     results_ip.append(0)
                     break                
                 try:
@@ -198,7 +203,7 @@ def mesh_datarate_test():
             print(f"RESULT IP: {mesh_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {mesh_result_rina[f'{size}:{package_loss}']}")
 
-            package_loss += 0.5
+            package_loss += LOSS_INCREASE
 
     return(plot(mesh_result_rina, mesh_result_ip, 'Packet loss fully meshed topology'))
 
@@ -212,7 +217,7 @@ def redundant_datarate_test():
     global redundant_result_ip
 
     #test_sizes = [5, 8]
-    test_sizes = [4, 5, 10, 30, 50]
+    test_sizes = [5, 10, 30, 50]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with Redundant topology with {size} nodes.")
@@ -221,7 +226,7 @@ def redundant_datarate_test():
         rina.create_networknamespaces(size)
         rina.create_redundant_paths_topology(size)
         time.sleep(size * 5)
-        package_loss = 0.5
+        package_loss = LOSS_START
         
         if size % 3 == 0:
             neighbors = [size-2, size-3, size-4]
@@ -238,7 +243,7 @@ def redundant_datarate_test():
         rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
         rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
 
-        while package_loss <= 10:
+        while package_loss <= LOSS_MAX:
             for n in neighbors:
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
 
@@ -247,12 +252,12 @@ def redundant_datarate_test():
 
             timeout_try_rina = 0
             success_try_rina = 0
-            while success_try_rina < 3:
-                if timeout_try_rina > 20:
+            while success_try_rina < SAMPLES:
+                if timeout_try_rina > RETIRES_MAX:
                     results_rina.append(0)
                     break
                 try:
-                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', '-g', '0', netns=f'node{size - 1}', stdout=subprocess.PIPE)
                     results_rina.append(match_rina_result(rina_result_raw))
                     success_try_rina += 1
                 except RuntimeError as e:
@@ -262,8 +267,8 @@ def redundant_datarate_test():
 
             timeout_try_ip = 0
             success_try_ip = 0
-            while success_try_ip < 3:
-                if timeout_try_ip > 20:
+            while success_try_ip < SAMPLES:
+                if timeout_try_ip > RETIRES_MAX:
                     results_ip.append(0)
                     break
                 try :
@@ -283,7 +288,7 @@ def redundant_datarate_test():
             print(f"RESULT IP: {redundant_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {redundant_result_rina[f'{size}:{package_loss}']}")
 
-            package_loss += 0.5
+            package_loss += LOSS_INCREASE
 
     return(plot(redundant_result_rina, redundant_result_ip, 'Packet loss redundant topology'))
 
