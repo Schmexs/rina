@@ -286,8 +286,8 @@ def main():
     topology = input("Which topology do you want to use? (1)Line (2)Fully meshed (3)Redundant paths: ")
     number = int(input("How many Network Namespaces do you want to create?: "))
 
-    create_networknamespaces(number)
     load_rlite()
+    create_networknamespaces(number)
 
     match topology:
         case "1":
