@@ -23,6 +23,9 @@ def plot(result_rina, result_ip, title) -> dict:
         size.append(s) if s not in size else None
         loss.append(l) if l not in loss else None
     
+    all_rina_series = []
+    all_ip_series = []
+
     for s in size:
         x = []
         y = []
@@ -43,8 +46,10 @@ def plot(result_rina, result_ip, title) -> dict:
             'data': list((x[i], y2[i]) for i in range(len(x))),
             'dashed': True
         }
-        series.append(rina_series)
-        series.append(ip_series)  
+        all_rina_series.append(rina_series)
+        all_ip_series.append(ip_series)  
+
+    series = all_rina_series + all_ip_series
 
     return {title:series} 
 
