@@ -12,7 +12,7 @@ import json
 LOSS_START = 0.05
 LOSS_INCREASE = 0.05
 LOSS_MAX = 0.3
-SAMPLES = 3
+SAMPLES = 4
 RETIRES_MAX = 10
 
 lo = logging.getLogger("rina")
@@ -113,7 +113,7 @@ def line_datarate_test():
                     results_ip.append(0)
                     break
                 try :
-                    ip_result_raw =  rina.run('iperf3', '-c', '10.0.0.1','-J', '-t', '5', '-M', '1460', '-g', '0', netns=f'node{size - 1}', stdout=subprocess.PIPE)
+                    ip_result_raw =  rina.run('iperf3', '-c', '10.0.0.1','-J', '-t', '5', '-M', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
                     ip_result_dict = json.loads(ip_result_raw)
                     results_ip.append(ip_result_dict['end']['sum_received']['bits_per_second'] / 10 ** 6)
                     success_try_ip += 1
