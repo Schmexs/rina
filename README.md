@@ -4,20 +4,20 @@
 ### RINA (rlite) Installation
 Follow the instructions in the [rlite installation guide](https://github.com/rlite/rlite#2-software-**requirements**).
 
-### Create the Test-Network Topology
-
-```bash
-sudo python rina.py 
-```
-
-### Enable IP forwarding
-```bash
-sudo sysctl -w net.ipv4.ip_forward=1 
-```
 
 ## Tests
+```bash
+sudo python3 rina_test.py 
+```
+
 ### Latency
 
 ### Datarate
 
 ### Datarate with packet loss
+
+## Evaluation
+
+Run `python3 -m http.server`
+
+Open `http://127.0.0.1:8000/result.html` in your webbrowser.
