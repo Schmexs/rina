@@ -8,6 +8,7 @@ import re
 import matplotlib.pyplot as plt
 import statistics
 import json
+import datarate
 
 LOSS_START = 0.05
 LOSS_INCREASE = 0.05
@@ -71,8 +72,8 @@ def line_datarate_test():
     global line_result_rina
     global line_result_ip
 
-    #test_sizes = [2, 5]
-    test_sizes = [2, 5, 10, 30, 50]
+    test_sizes = [2, 5]
+    #test_sizes = [2, 5, 10, 30, 50]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with line topology with {size} nodes.")
@@ -82,47 +83,14 @@ def line_datarate_test():
         time.sleep(size)
         package_loss = LOSS_START
         rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
-        
-        rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
-        rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
+    
         while package_loss <= LOSS_MAX:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
-            results_rina = []
-            results_ip = []
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1')          
 
-            timeout_try_rina = 0
-            success_try_rina = 0
-            while success_try_rina < SAMPLES:
-                if timeout_try_rina > RETIRES_MAX:
-                    results_rina.append(0)
-                    break
-                try:
-                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '5', '-g', '0', netns=f'node{size - 1}', stdout=subprocess.PIPE)    
-                    results_rina.append(match_rina_result(rina_result_raw))
-                    success_try_rina += 1
-                except RuntimeError as e:
-                    print(f"rinaperf failed: {e}")
-                    timeout_try_rina += 1
-                    #results_rina.append(0)
-
-            timeout_try_ip = 0
-            success_try_ip = 0
-            while success_try_ip < SAMPLES:
-                if timeout_try_ip > RETIRES_MAX:
-                    results_ip.append(0)
-                    break
-                try :
-                    ip_result_raw =  rina.run('iperf3', '-c', '10.0.0.1','-J', '-t', '5', '-M', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-                    ip_result_dict = json.loads(ip_result_raw)
-                    results_ip.append(ip_result_dict['end']['sum_received']['bits_per_second'] / 10 ** 6)
-                    success_try_ip += 1
-                except (RuntimeError, KeyError) as e:
-                    #results_ip.append(0)
-                    print(f"iperf3 failed: {e}") 
-
-            line_result_ip[f'{size}:{package_loss}'] = round(statistics.mean(results_ip))
-            line_result_rina[f'{size}:{package_loss}'] = round(statistics.mean(results_rina))
+            line_result_ip[f'{size}:{package_loss}'] = result_ip
+            line_result_rina[f'{size}:{package_loss}'] = result_rina
 
             print(f"RESULT IP: {line_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {line_result_rina[f'{size}:{package_loss}']}")
@@ -155,50 +123,14 @@ def mesh_datarate_test():
         for i in range(size - 1):
             rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
         
-        
-        rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
-        rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
-
         while package_loss <= LOSS_MAX:
             for i in range(size - 1):
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
-            results_rina = []
-            results_ip = []
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1')          
 
-            timeout_try_rina = 0
-            success_try_rina = 0
-            while success_try_rina < SAMPLES:
-                if timeout_try_rina > RETIRES_MAX:
-                    results_rina.append(0)
-                    break
-                try:
-                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '5', '-g', '0', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-                    results_rina.append(match_rina_result(rina_result_raw))
-                    success_try_rina += 1
-                except RuntimeError as e:
-                    print(f"rinaperf failed: {e}")
-                    timeout_try_rina += 1
-                    #results_rina.append(0)
-
-            timeout_try_ip = 0
-            success_try_ip = 0
-            while success_try_ip < SAMPLES:
-                if timeout_try_ip > RETIRES_MAX:
-                    results_ip.append(0)
-                    break                
-                try:
-                    ip_result_raw =  rina.run('iperf3', '-c', f'10.0.{size-1}.1','-J', '-t', '5', '-M', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-                    ip_result_dict = json.loads(ip_result_raw)
-                    results_ip.append(ip_result_dict['end']['sum_received']['bits_per_second'] / 10 ** 6)
-                    success_try_ip += 1
-                except (RuntimeError, KeyError) as e:
-                    #results_ip.append(0)
-                    timeout_try_ip += 1
-                    print(f"iperf3 failed: {e}")
-
-            mesh_result_ip[f'{size}:{package_loss}'] = round(statistics.mean(results_ip))
-            mesh_result_rina[f'{size}:{package_loss}'] = round(statistics.mean(results_rina))
+            line_result_ip[f'{size}:{package_loss}'] = result_ip
+            line_result_rina[f'{size}:{package_loss}'] = result_rina
 
             print(f"RESULT IP: {mesh_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {mesh_result_rina[f'{size}:{package_loss}']}")
@@ -216,8 +148,8 @@ def redundant_datarate_test():
     global redundant_result_rina
     global redundant_result_ip
 
-    #test_sizes = [5, 8]
-    test_sizes = [5, 10, 30, 50]
+    test_sizes = [8]
+    #test_sizes = [5, 10, 30, 50]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with Redundant topology with {size} nodes.")
@@ -239,51 +171,15 @@ def redundant_datarate_test():
         
         for n in neighbors:
             rina.run('tc', 'qdisc', 'add', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
-        
-        rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns='node0')
-        rina.run('bash', '-c', 'iperf3 -s &', netns='node0')
 
         while package_loss <= LOSS_MAX:
             for n in neighbors:
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
-
-            results_rina = []
-            results_ip = []
-
-            timeout_try_rina = 0
-            success_try_rina = 0
-            while success_try_rina < SAMPLES:
-                if timeout_try_rina > RETIRES_MAX:
-                    results_rina.append(0)
-                    break
-                try:
-                    rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', '-g', '0', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-                    results_rina.append(match_rina_result(rina_result_raw))
-                    success_try_rina += 1
-                except RuntimeError as e:
-                    print(f"rinaperf failed: {e}")
-                    timeout_try_rina += 1
-                    #results_rina.append(0)
-
-            timeout_try_ip = 0
-            success_try_ip = 0
-            while success_try_ip < SAMPLES:
-                if timeout_try_ip > RETIRES_MAX:
-                    results_ip.append(0)
-                    break
-                try :
-                    ip_result_raw =  rina.run('iperf3', '-c', '10.0.0.1','-J', '-t', '10', '-M', '1460', netns=f'node{size - 1}', stdout=subprocess.PIPE)
-                    ip_result_dict = json.loads(ip_result_raw)
-                    results_ip.append(ip_result_dict['end']["sum_received"]['bits_per_second'] / 10 ** 6)
-                    success_try_ip += 1
-                except (RuntimeError, KeyError) as e:
-                    #results_ip.append(0)
-                    timeout_try_ip += 1
-                    print(f"iperf3 failed: {e}")
-
             
-            redundant_result_ip[f'{size}:{package_loss}'] = round(statistics.mean(results_ip))
-            redundant_result_rina[f'{size}:{package_loss}'] = round(statistics.mean(results_rina))
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1'   )          
+
+            line_result_ip[f'{size}:{package_loss}'] = result_ip
+            line_result_rina[f'{size}:{package_loss}'] = result_rina
 
             print(f"RESULT IP: {redundant_result_ip[f'{size}:{package_loss}']}")
             print(f"RESULT RINA: {redundant_result_rina[f'{size}:{package_loss}']}")
@@ -297,8 +193,11 @@ def main() -> list:
     test_results = []
     rina.load_rlite()
     test_results.append(line_datarate_test())
-    test_results.append(mesh_datarate_test())
+    #test_results.append(mesh_datarate_test())
     test_results.append(redundant_datarate_test())
     rina.cleanup()
 
     return test_results
+
+if __name__ == '__main__':
+    main()
