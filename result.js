@@ -94,7 +94,19 @@ function generateChartData(chart) {
 const charts = {};
 
 function loadCharts() {
-    fetch("data.json").then((rsp) => {
+    let file = "data.json"
+
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
+    });
+
+    console.log(params);
+
+    if (params.file) {
+        file = params.file;
+    }
+
+    fetch(file).then((rsp) => {
         rsp.json().then((chartsRaw) => {
             chartsRaw.forEach((chart) => {
                 const chartData = generateChartData(chart);

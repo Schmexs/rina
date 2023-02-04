@@ -20,4 +20,4 @@ sudo python3 rina_test.py
 
 Run `python3 -m http.server`
 
-Open `http://127.0.0.1:8000/result.html` in your webbrowser.
+Open `http://127.0.0.1:8000/result.html?file=data-<REPLACE>.json` in your webbrowser.
