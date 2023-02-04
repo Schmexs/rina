@@ -27,7 +27,7 @@ def datarate_test(from_ns, to_ns, to_ip):
             results_rina.append(0)
             break
         try:
-            rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '10', '-g', '0', netns=from_ns, stdout=subprocess.PIPE)
+            rina_result_raw = rina.run('rinaperf', '-d', 'n.DIF', '-t', 'perf', '-s', '1460', '-D', '5', '-g', '0', netns=from_ns, stdout=subprocess.PIPE)
             results_rina.append(match_rina_result(rina_result_raw))
             success_try_rina += 1
         except RuntimeError as e:
@@ -42,7 +42,7 @@ def datarate_test(from_ns, to_ns, to_ip):
             results_ip.append(0)
             break
         try :
-            ip_result_raw =  rina.run('iperf3', '-c', to_ip, '-J', '-t', '10', '-M', '1460', netns=from_ns, stdout=subprocess.PIPE)
+            ip_result_raw =  rina.run('iperf3', '-c', to_ip, '-J', '-t', '5', '-M', '1460', netns=from_ns, stdout=subprocess.PIPE)
             ip_result_dict = json.loads(ip_result_raw)
             results_ip.append(ip_result_dict['end']["sum_received"]['bits_per_second'] / 10 ** 6)
             success_try_ip += 1
