@@ -9,6 +9,10 @@ import datarate
 lo = logging.getLogger("rina")
 rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 
+LINE_SIZES = [2, 5, 10, 20]
+MESH_SIZES = [5, 10, 30]
+REDUNDANT_SIZES = [5, 10, 30]
+
 def plot(result_rina: dict, result_ip: dict, title: str) -> dict:
     series_ip = {
         'name': f'IP',
@@ -38,10 +42,7 @@ def line_datarate_test():
     global line_result_rina
     global line_result_ip
 
-    #test_sizes = [2, 5]
-    test_sizes = [2, 5, 10, 30]
-
-    for size in test_sizes:
+    for size in LINE_SIZES:
         lo.info(f"Running datarate test with line topology with {size} nodes.")
         rina.cleanup()
         rina.create_networknamespaces(size)
@@ -68,10 +69,7 @@ def mesh_datarate_test():
     global mesh_result_rina
     global mesh_result_ip
 
-    #test_sizes = [3, 6]
-    test_sizes = [5, 10, 30]
-
-    for size in test_sizes:
+    for size in MESH_SIZES:
         lo.info(f"Running datarate test with fully meshed topology with {size} nodes.")
 
         rina.cleanup()
@@ -98,10 +96,7 @@ def redundant_datarate_test():
     global redundant_result_rina
     global redundant_result_ip
 
-    #test_sizes = [8]
-    test_sizes = [5, 10, 30]
-
-    for size in test_sizes:
+    for size in REDUNDANT_SIZES:
         lo.info(f"Running datarate test with Redundant topology with {size} nodes.")
 
         rina.cleanup()
