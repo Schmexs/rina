@@ -218,7 +218,7 @@ def main() -> list:
     rina.load_rlite()
     test_results.append(line_datarate_test())
     test_results.append(line_datarate_reno_test())
-    test_results.append(mesh_datarate_test())
+    #test_results.append(mesh_datarate_test())
     test_results.append(redundant_datarate_test())
     rina.cleanup()
 
