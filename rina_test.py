@@ -1,6 +1,7 @@
 import json
 import rina_package_drop as rpd
 import rina_datarate as rd
+import latency_test as rlt
 import time
 
 def write_json(data):
@@ -33,6 +34,7 @@ def main():
     test_results = []
     drop_package_test = rpd.main()
     datarate_test = rd.main()
+    latency_test = rlt.main()
 
     for test in drop_package_test:
         for title in test:
@@ -41,6 +43,10 @@ def main():
     for test in datarate_test:
         for title in test:
             test_results.append(create_json(title, "nodes", "", "datarate", "Mbit/s", test[title]))
+
+    for test in latency_test:
+        for title in test:
+            test_results.append(create_json(title, "nodes", "", "Latency", "ms", test[title]))
 
     write_json(test_results)
     
