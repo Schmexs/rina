@@ -1,0 +1,370 @@
+[
+    {
+        "id": "packet_loss_line_topology",
+        "title": "Packet loss Line topology",
+        "axes": {
+            "x": {
+                "name": "pckg loss",
+                "unit": "%"
+            },
+            "y": {
+                "name": "datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "2-nodes - RINA",
+                "data": [
+                    [
+                        0.05,
+                        46
+                    ],
+                    [
+                        0.1,
+                        17
+                    ],
+                    [
+                        0.15000000000000002,
+                        2
+                    ],
+                    [
+                        0.2,
+                        4
+                    ],
+                    [
+                        0.25,
+                        2
+                    ],
+                    [
+                        0.3,
+                        2
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "5-nodes - RINA",
+                "data": [
+                    [
+                        0.05,
+                        30
+                    ],
+                    [
+                        0.1,
+                        14
+                    ],
+                    [
+                        0.15000000000000002,
+                        11
+                    ],
+                    [
+                        0.2,
+                        7
+                    ],
+                    [
+                        0.25,
+                        4
+                    ],
+                    [
+                        0.3,
+                        3
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "10-nodes - RINA",
+                "data": [
+                    [
+                        0.05,
+                        41
+                    ],
+                    [
+                        0.1,
+                        16
+                    ],
+                    [
+                        0.15000000000000002,
+                        7
+                    ],
+                    [
+                        0.2,
+                        4
+                    ],
+                    [
+                        0.25,
+                        2
+                    ],
+                    [
+                        0.3,
+                        5
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "20-nodes - RINA",
+                "data": [
+                    [
+                        0.05,
+                        43
+                    ],
+                    [
+                        0.1,
+                        3
+                    ],
+                    [
+                        0.15000000000000002,
+                        7
+                    ],
+                    [
+                        0.2,
+                        11
+                    ],
+                    [
+                        0.25,
+                        3
+                    ],
+                    [
+                        0.3,
+                        3
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "2-nodes - IP",
+                "data": [
+                    [
+                        0.05,
+                        76055
+                    ],
+                    [
+                        0.1,
+                        69815
+                    ],
+                    [
+                        0.15000000000000002,
+                        57658
+                    ],
+                    [
+                        0.2,
+                        47758
+                    ],
+                    [
+                        0.25,
+                        46694
+                    ],
+                    [
+                        0.3,
+                        40395
+                    ]
+                ],
+                "dashed": true
+            },
+            {
+                "name": "5-nodes - IP",
+                "data": [
+                    [
+                        0.05,
+                        0
+                    ],
+                    [
+                        0.1,
+                        0
+                    ],
+                    [
+                        0.15000000000000002,
+                        0
+                    ],
+                    [
+                        0.2,
+                        0
+                    ],
+                    [
+                        0.25,
+                        0
+                    ],
+                    [
+                        0.3,
+                        0
+                    ]
+                ],
+                "dashed": true
+            },
+            {
+                "name": "10-nodes - IP",
+                "data": [
+                    [
+                        0.05,
+                        0
+                    ],
+                    [
+                        0.1,
+                        0
+                    ],
+                    [
+                        0.15000000000000002,
+                        0
+                    ],
+                    [
+                        0.2,
+                        0
+                    ],
+                    [
+                        0.25,
+                        0
+                    ],
+                    [
+                        0.3,
+                        0
+                    ]
+                ],
+                "dashed": true
+            },
+            {
+                "name": "20-nodes - IP",
+                "data": [
+                    [
+                        0.05,
+                        0
+                    ],
+                    [
+                        0.1,
+                        0
+                    ],
+                    [
+                        0.15000000000000002,
+                        0
+                    ],
+                    [
+                        0.2,
+                        0
+                    ],
+                    [
+                        0.25,
+                        0
+                    ],
+                    [
+                        0.3,
+                        0
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_line_topology",
+        "title": "Datarate Line topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [
+                    [
+                        2,
+                        4952
+                    ],
+                    [
+                        5,
+                        2575
+                    ],
+                    [
+                        10,
+                        1194
+                    ],
+                    [
+                        30,
+                        53
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [
+                    [
+                        2,
+                        82035
+                    ],
+                    [
+                        5,
+                        0
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        30,
+                        0
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_fully_meshed_topology",
+        "title": "Datarate fully meshed topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_redundant_topology",
+        "title": "Datarate redundant topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [],
+                "dashed": true
+            }
+        ]
+    }
+]

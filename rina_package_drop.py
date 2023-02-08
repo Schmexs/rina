@@ -72,8 +72,8 @@ def line_datarate_test():
     global line_result_rina
     global line_result_ip
 
-    test_sizes = [2, 5]
-    #test_sizes = [2, 5, 10, 30, 50]
+    #test_sizes = [2, 5]
+    test_sizes = [2, 5, 10, 20]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with line topology with {size} nodes.")
@@ -92,8 +92,8 @@ def line_datarate_test():
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
 
-            print(f"RESULT IP: {line_result_ip[f'{size}:{package_loss}']}")
-            print(f"RESULT RINA: {line_result_rina[f'{size}:{package_loss}']}")
+            #print(f"RESULT IP: {line_result_ip[f'{size}:{package_loss}']}")
+            #print(f"RESULT RINA: {line_result_rina[f'{size}:{package_loss}']}")
 
             package_loss += LOSS_INCREASE
 
@@ -109,7 +109,7 @@ def mesh_datarate_test():
     global mesh_result_ip
 
     #test_sizes = [3, 6]
-    test_sizes = [5, 10, 30, 50]
+    test_sizes = [5, 10, 30]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with fully meshed topology with {size} nodes.")
@@ -132,8 +132,8 @@ def mesh_datarate_test():
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
 
-            print(f"RESULT IP: {mesh_result_ip[f'{size}:{package_loss}']}")
-            print(f"RESULT RINA: {mesh_result_rina[f'{size}:{package_loss}']}")
+            #print(f"RESULT IP: {mesh_result_ip[f'{size}:{package_loss}']}")
+            #print(f"RESULT RINA: {mesh_result_rina[f'{size}:{package_loss}']}")
 
             package_loss += LOSS_INCREASE
 
@@ -148,8 +148,8 @@ def redundant_datarate_test():
     global redundant_result_rina
     global redundant_result_ip
 
-    test_sizes = [8]
-    #test_sizes = [5, 10, 30, 50]
+    #test_sizes = [8]
+    test_sizes = [5, 10, 30]
 
     for size in test_sizes:
         lo.info(f"Running datarate test with Redundant topology with {size} nodes.")
@@ -181,8 +181,8 @@ def redundant_datarate_test():
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
 
-            print(f"RESULT IP: {redundant_result_ip[f'{size}:{package_loss}']}")
-            print(f"RESULT RINA: {redundant_result_rina[f'{size}:{package_loss}']}")
+            #print(f"RESULT IP: {redundant_result_ip[f'{size}:{package_loss}']}")
+            #print(f"RESULT RINA: {redundant_result_rina[f'{size}:{package_loss}']}")
 
             package_loss += LOSS_INCREASE
 
@@ -193,7 +193,7 @@ def main() -> list:
     test_results = []
     rina.load_rlite()
     test_results.append(line_datarate_test())
-    #test_results.append(mesh_datarate_test())
+    test_results.append(mesh_datarate_test())
     test_results.append(redundant_datarate_test())
     rina.cleanup()
 
