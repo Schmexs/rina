@@ -55,8 +55,8 @@ def load_rlite():
 
 
 def set_sysctl():
-    run('sysctl', '-w', 'net.ipv4.ip_forward=0')
-    run('sysctl', '-w', 'net.ipv4.conf.all.rp_filter=1')
+    run('sysctl', '-w', 'net.ipv4.ip_forward=1')
+    run('sysctl', '-w', 'net.ipv4.conf.all.rp_filter=0')
 
 
 def start_bird(netns_name):
