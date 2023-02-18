@@ -13,7 +13,13 @@ rinaper_re = re.compile(r"Receiver\s*\d*\s*[\d\.]*\s*([\d\.]*)")
 def match_rina_result(result):
     return float(re.search(rinaper_re, result).group(1))
 
-def datarate_test(from_ns, to_ns, to_ip, tcp_congestion_algo='cubic', skip_rina=False):
+def datarate_test(from_ns, to_ns, to_ip, tcp_congestion_algo='cubic', skip_rina=False, args=None):
+    global SAMPLES, RETIRES_MAX
+
+    if args is not None:
+        SAMPLES = args.samples
+        RETIRES_MAX = args.retries
+
     rina.run('bash', '-c', 'rinaperf -l -d n.DIF &', netns=to_ns)
     rina.run('bash', '-c', 'iperf3 -s &', netns=to_ns)
 
@@ -49,6 +55,10 @@ def datarate_test(from_ns, to_ns, to_ip, tcp_congestion_algo='cubic', skip_rina=
         try :
             ip_result_raw =  rina.run('iperf3', '-c', to_ip, '-J', '-t', '5', '-M', '1460', '-C', tcp_congestion_algo, netns=from_ns, stdout=subprocess.PIPE)
             ip_result_dict = json.loads(ip_result_raw)
+
+            if ip_result_dict['end'].get('sum_received') is None:
+                print(ip_result_dict)
+
             results_ip.append(ip_result_dict['end']["sum_received"]['bits_per_second'] / 10 ** 6)
             success_try_ip += 1
         except (RuntimeError, KeyError) as e:

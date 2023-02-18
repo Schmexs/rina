@@ -15,7 +15,7 @@ lo = logging.getLogger("rina")
 LINE_SIZES = [2, 5, 10, 20]
 MESH_SIZES = [5, 10, 30]
 REDUNDANT_SIZES = [5, 10, 30]
-nodeCount = nodeCountList[0]
+nodeCount = 2
 pingCount = 10
 rrTransactions = 100
 
@@ -215,7 +215,12 @@ def fully_meshed_latency_test():
 
     return (plot(line_ping_result_rina, line_rr_result_rina, line_ping_result_ip, line_rr_tcp_result, line_rr_udp_result, f'Latency fully meshed topology {nodeCount} nodes.'))
 
-def main():    
+def main(args):    
+    global LINE_SIZES, REDUNDANT_SIZES, MESH_SIZES
+    LINE_SIZES = args.nodes
+    REDUNDANT_SIZES = args.nodes
+    MESH_SIZES = args.nodes
+
     test_results = []
     rina.load_rlite()
     rina.cleanup()

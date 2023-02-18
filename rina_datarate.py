@@ -38,7 +38,7 @@ def match_rina_result(result):
 line_result_rina = {}
 line_result_ip = {}
 
-def line_datarate_test():
+def line_datarate_test(args):
     global line_result_rina
     global line_result_ip
 
@@ -49,7 +49,7 @@ def line_datarate_test():
         rina.create_line_topology(size)
         time.sleep(size)
        
-        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1')          
+        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1', args=args)          
 
         line_result_ip[size] = result_ip
         line_result_rina[size] = result_rina
@@ -65,7 +65,7 @@ def line_datarate_test():
 mesh_result_rina = {}
 mesh_result_ip = {}
 
-def mesh_datarate_test():
+def mesh_datarate_test(args):
     global mesh_result_rina
     global mesh_result_ip
 
@@ -77,7 +77,7 @@ def mesh_datarate_test():
         rina.create_fully_meshed_topology(size)
         time.sleep(size * 3)
 
-        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1')          
+        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1', args=args)          
 
         line_result_ip[size] = result_ip
         line_result_rina[size] = result_rina
@@ -92,7 +92,7 @@ def mesh_datarate_test():
 redundant_result_rina = {}
 redundant_result_ip = {}
 
-def redundant_datarate_test():
+def redundant_datarate_test(args):
     global redundant_result_rina
     global redundant_result_ip
 
@@ -104,7 +104,7 @@ def redundant_datarate_test():
         rina.create_redundant_paths_topology(size)
         time.sleep(size * 5)
 
-        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1'   )          
+        result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1', args=args)          
 
         line_result_ip[size] = result_ip
         line_result_rina[size] = result_rina
@@ -115,12 +115,17 @@ def redundant_datarate_test():
     return(plot(redundant_result_rina, redundant_result_ip, 'Datarate redundant topology'))
 
 
-def main() -> list:
+def main(args) -> list:
+    global LINE_SIZES, REDUNDANT_SIZES, MESH_SIZES
+    LINE_SIZES = args.nodes
+    REDUNDANT_SIZES = args.nodes
+    MESH_SIZES = args.nodes
+
     test_results = []
     rina.load_rlite()
-    test_results.append(line_datarate_test())
-    test_results.append(mesh_datarate_test())
-    test_results.append(redundant_datarate_test())
+    test_results.append(line_datarate_test(args))
+    test_results.append(mesh_datarate_test(args))
+    test_results.append(redundant_datarate_test(args))
     rina.cleanup()
 
     return test_results

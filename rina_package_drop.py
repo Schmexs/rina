@@ -13,11 +13,9 @@ import datarate
 LOSS_START = 0.05
 LOSS_INCREASE = 0.05
 LOSS_MAX = 0.3
-SAMPLES = 4
-RETIRES_MAX = 10
-LINE_SIZES = [2, 5, 10, 20]
-MESH_SIZES = [5, 10, 30]
-REDUNDANT_SIZES = [5, 10, 30]
+LINE_SIZES = [2, 5, 15]
+MESH_SIZES = [5, 15]
+REDUNDANT_SIZES = [10]
 
 lo = logging.getLogger("rina")
 lo.setLevel(logging.DEBUG)
@@ -72,7 +70,7 @@ def match_rina_result(result):
 line_result_rina = {}
 line_result_ip = {}
 
-def line_datarate_test():
+def line_datarate_test(args):
     global line_result_rina
     global line_result_ip
 
@@ -88,7 +86,7 @@ def line_datarate_test():
         while package_loss <= LOSS_MAX:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
-            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1')          
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1', args=args)          
 
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
@@ -103,7 +101,7 @@ def line_datarate_test():
 
 line_reno_result_ip = {}
 
-def line_datarate_reno_test():
+def line_datarate_reno_test(args):
     global line_reno_result_ip
 
     for size in LINE_SIZES:
@@ -118,7 +116,7 @@ def line_datarate_reno_test():
         while package_loss <= LOSS_MAX:
             rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{size - 2}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
            
-            result_ip, _ = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1', tcp_congestion_algo='reno', skip_rina=True)          
+            result_ip, _ = datarate.datarate_test(f'node{size - 1}', 'node0', '10.0.0.1', tcp_congestion_algo='reno', skip_rina=True, args=args)          
 
             line_reno_result_ip[f'{size}:{package_loss}'] = result_ip
 
@@ -134,7 +132,7 @@ def line_datarate_reno_test():
 mesh_result_rina = {}
 mesh_result_ip = {}
 
-def mesh_datarate_test():
+def mesh_datarate_test(args):
     global mesh_result_rina
     global mesh_result_ip
 
@@ -154,7 +152,7 @@ def mesh_datarate_test():
             for i in range(size - 1):
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size - 1}-{i}', 'root','netem', 'loss', str(package_loss)+'%', netns=f'node{size - 1}')
 
-            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1')          
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1', args=args)          
 
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
@@ -171,7 +169,7 @@ def mesh_datarate_test():
 redundant_result_rina = {}
 redundant_result_ip = {}
 
-def redundant_datarate_test():
+def redundant_datarate_test(args):
     global redundant_result_rina
     global redundant_result_ip
 
@@ -200,7 +198,7 @@ def redundant_datarate_test():
             for n in neighbors:
                 rina.run('tc', 'qdisc', 'change', 'dev', f'veth{size-1}-{n}', 'root', 'netem', 'loss', str(package_loss)+'%', netns=f'node{size-1}')
             
-            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1'   )          
+            result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1', args=args)          
 
             line_result_ip[f'{size}:{package_loss}'] = result_ip
             line_result_rina[f'{size}:{package_loss}'] = result_rina
@@ -213,13 +211,21 @@ def redundant_datarate_test():
     return(plot(redundant_result_rina, redundant_result_ip, 'Packet loss redundant topology'))
 
 
-def main() -> list:
+def main(args) -> list:
+    global LINE_SIZES, REDUNDANT_SIZES, MESH_SIZES, LOSS_START, LOSS_INCREASE, LOSS_MAX
+    LINE_SIZES = args.nodes
+    REDUNDANT_SIZES = args.nodes
+    MESH_SIZES = args.nodes
+    LOSS_START = args.loss_start
+    LOSS_INCREASE = args.loss_increase
+    LOSS_MAX = args.loss_max
+
     test_results = []
     rina.load_rlite()
-    test_results.append(line_datarate_test())
-    test_results.append(line_datarate_reno_test())
+    test_results.append(line_datarate_test(args))
+    test_results.append(line_datarate_reno_test(args))
     #test_results.append(mesh_datarate_test())
-    test_results.append(redundant_datarate_test())
+    test_results.append(redundant_datarate_test(args))
     rina.cleanup()
 
     return test_results
