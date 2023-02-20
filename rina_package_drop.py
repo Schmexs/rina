@@ -182,12 +182,15 @@ def redundant_datarate_test(args):
         time.sleep(size * 5)
         package_loss = LOSS_START
         
-        if size % 3 == 0:
-            neighbors = [size-2, size-3, size-4]
-        elif size % 3 == 2:
-            neighbors = [size-2, size-4]
-        elif size % 3 == 1:
-            neighbors = [size-4]
+        if size >= 4:
+            if size % 3 == 0:
+                neighbors = [size-2, size-3, size-4]
+            elif size % 3 == 2:
+                neighbors = [size-2, size-4]
+            elif size % 3 == 1:
+                neighbors = [size-4]
+            else:
+                neighbors = []
         else:
             neighbors = []
         
