@@ -1,0 +1,114 @@
+[
+    {
+        "id": "datarate_line_topology",
+        "title": "Datarate Line topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [
+                    [
+                        3,
+                        5906
+                    ],
+                    [
+                        6,
+                        2908
+                    ],
+                    [
+                        9,
+                        2045
+                    ],
+                    [
+                        12,
+                        1489
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [
+                    [
+                        3,
+                        60514
+                    ],
+                    [
+                        6,
+                        46239
+                    ],
+                    [
+                        9,
+                        43266
+                    ],
+                    [
+                        12,
+                        35302
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_fully_meshed_topology",
+        "title": "Datarate fully meshed topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_redundant_topology",
+        "title": "Datarate redundant topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [],
+                "dashed": true
+            }
+        ]
+    }
+]
