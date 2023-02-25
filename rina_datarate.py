@@ -106,8 +106,8 @@ def redundant_datarate_test(args):
 
         result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1', args=args)          
 
-        redundant_result_rina[size] = result_ip
-        redundant_result_ip[size] = result_rina
+        redundant_result_ip[size] = result_ip
+        redundant_result_rina[size] = result_rina
 
         print(f"RESULT IP: {result_ip}")
         print(f"RESULT RINA: {result_rina}")
