@@ -154,8 +154,8 @@ def mesh_datarate_test(args):
 
             result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.{size-1}.1', args=args)          
 
-            line_result_ip[f'{size}:{package_loss}'] = result_ip
-            line_result_rina[f'{size}:{package_loss}'] = result_rina
+            mesh_result_ip[f'{size}:{package_loss}'] = result_ip
+            mesh_result_rina[f'{size}:{package_loss}'] = result_rina
 
             #print(f"RESULT IP: {mesh_result_ip[f'{size}:{package_loss}']}")
             #print(f"RESULT RINA: {mesh_result_rina[f'{size}:{package_loss}']}")
@@ -203,8 +203,8 @@ def redundant_datarate_test(args):
             
             result_ip, result_rina = datarate.datarate_test(f'node{size - 1}', 'node0', f'10.0.0.1', args=args)          
 
-            line_result_ip[f'{size}:{package_loss}'] = result_ip
-            line_result_rina[f'{size}:{package_loss}'] = result_rina
+            redundant_result_ip[f'{size}:{package_loss}'] = result_ip
+            redundant_result_rina[f'{size}:{package_loss}'] = result_rina
 
             #print(f"RESULT IP: {redundant_result_ip[f'{size}:{package_loss}']}")
             #print(f"RESULT RINA: {redundant_result_rina[f'{size}:{package_loss}']}")
