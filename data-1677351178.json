@@ -1,0 +1,182 @@
+[
+    {
+        "id": "datarate_line_topology",
+        "title": "Datarate Line topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [
+                    [
+                        3,
+                        5866
+                    ],
+                    [
+                        6,
+                        2918
+                    ],
+                    [
+                        9,
+                        2007
+                    ],
+                    [
+                        12,
+                        635
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [
+                    [
+                        3,
+                        60921
+                    ],
+                    [
+                        6,
+                        49909
+                    ],
+                    [
+                        9,
+                        41824
+                    ],
+                    [
+                        12,
+                        31687
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_fully_meshed_topology",
+        "title": "Datarate fully meshed topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [
+                    [
+                        3,
+                        5245
+                    ],
+                    [
+                        6,
+                        5338
+                    ],
+                    [
+                        9,
+                        5486
+                    ],
+                    [
+                        12,
+                        5402
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [
+                    [
+                        3,
+                        46808
+                    ],
+                    [
+                        6,
+                        51725
+                    ],
+                    [
+                        9,
+                        42624
+                    ],
+                    [
+                        12,
+                        52116
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    },
+    {
+        "id": "datarate_redundant_topology",
+        "title": "Datarate redundant topology",
+        "axes": {
+            "x": {
+                "name": "nodes",
+                "unit": ""
+            },
+            "y": {
+                "name": "Datarate",
+                "unit": "Mbit/s"
+            }
+        },
+        "series": [
+            {
+                "name": "RINA",
+                "data": [
+                    [
+                        3,
+                        5421
+                    ],
+                    [
+                        6,
+                        3060
+                    ],
+                    [
+                        9,
+                        2316
+                    ],
+                    [
+                        12,
+                        1721
+                    ]
+                ],
+                "dashed": false
+            },
+            {
+                "name": "IP",
+                "data": [
+                    [
+                        3,
+                        41797
+                    ],
+                    [
+                        6,
+                        44798
+                    ],
+                    [
+                        9,
+                        45347
+                    ],
+                    [
+                        12,
+                        41124
+                    ]
+                ],
+                "dashed": true
+            }
+        ]
+    }
+]
