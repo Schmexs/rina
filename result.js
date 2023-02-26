@@ -58,6 +58,7 @@ function generateChartData(chart) {
         },
         xaxis: {
             type: "numeric",
+            decimalsInFloat: 2,
             title: {
                 text: chart.axes.x.name
             }
