@@ -78,7 +78,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--retries', action='store',
                         default=10, type=int,
                         help='Maximum number of retries for a failed test.')
-    parser.add_argument('-n', '--nodes', nargs='+', help='Number of nodes to simulate (list)', required=False, default=[4, 10, 15],
+    parser.add_argument('-n', '--nodes', nargs='+', help='Number of nodes to simulate (list)', required=False, default=[3, 6, 9],
                         type=int)
     parser.add_argument('-ls', '--loss-start', action='store',
                         default=0.05, type=float,
